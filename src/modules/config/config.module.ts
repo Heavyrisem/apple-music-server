@@ -6,12 +6,10 @@ import * as Joi from 'joi';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV !== 'production' ? '.env' : '.env.production',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
         PORT: Joi.number(),
-        REACT_URL: Joi.string().default('http://localhost:3000'),
-        REACT_DIR: Joi.string().default('./build_react'),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.number().required(),
         DB_USER: Joi.string().required(),

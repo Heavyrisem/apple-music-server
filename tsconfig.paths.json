@@ -2,6 +2,9 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
+            "~module/*": [
+                "src/module/*"
+            ],
             "~src/*": [
                 "src/*"
             ]
