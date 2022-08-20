@@ -1,12 +1,25 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { ConfigurationModule } from './modules/config/config.module';
+import { LoggerMiddleware } from './modules/logging/logger.middleware';
 import { UserModule } from './user/user.module';
-import { YoutubeModule } from './youtube/youtube.module';
+import { MusicModule } from './music/music.module';
 
 @Module({
-  imports: [ConfigurationModule, UserModule, YoutubeModule],
+  imports: [
+    ConfigurationModule,
+    UserModule,
+    MusicModule.ForRoot({
+      youtubeApiKey: process.env.YOUTUBE_API_KEY,
+      musicAuthorization: process.env.YOUTUBE_MUSIC_AUTHORIZATION,
+      musicCookie: process.env.YOUTUBE_MUSIC_COOKIE,
+    }),
+  ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
