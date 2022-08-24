@@ -40,3 +40,6 @@ lerna-debug.log*
 # env
 .env
 .env.production
+
+# test data
+*.mp3

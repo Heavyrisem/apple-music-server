@@ -13,3 +13,8 @@ export interface MusicInfo {
   thumbnail: string;
   isExplicit: boolean;
 }
+
+export interface MusicData {
+  videoId: string;
+  data: Buffer;
+}

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { User } from '~src/user/user.entity';
+import { MusicData } from '~src/music/entity/musicData.entity';
+import { MusicInfo } from '~src/music/entity/musicInfo.entity';
 
 @Module({
   imports: [
@@ -12,9 +13,10 @@ import { User } from '~src/user/user.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      synchronize: true,
-      logging: true,
-      entities: [],
+      synchronize: process.env.NODE_ENV !== 'production',
+      // dropSchema: process.env.NODE_ENV !== 'production',
+      // logging: true,
+      entities: [MusicData, MusicInfo],
     }),
   ],
 })
