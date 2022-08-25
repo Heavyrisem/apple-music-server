@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MusicData } from '~src/music/entity/musicData.entity';
 import { MusicInfo } from '~src/music/entity/musicInfo.entity';
+import { MusicLyrics } from '~src/music/entity/musicLyrics.entity';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { MusicInfo } from '~src/music/entity/musicInfo.entity';
       synchronize: process.env.NODE_ENV !== 'production',
       // dropSchema: process.env.NODE_ENV !== 'production',
       // logging: true,
-      entities: [MusicData, MusicInfo],
+      entities: [MusicData, MusicInfo, MusicLyrics],
     }),
   ],
 })

@@ -1,14 +1,14 @@
 import { Column, Entity } from 'typeorm';
 
-import { MusicLyrics as MusicLrycisType } from '../music.interface';
+import { MusicLyrics as MusicLyricsType } from '../music.interface';
 
 import { CoreEntity } from '~src/modules/database/core.entity';
 
 @Entity()
-export class MusicLrycis extends CoreEntity implements MusicLrycisType {
+export class MusicLyrics extends CoreEntity implements MusicLyricsType {
   @Column()
   videoId: string;
 
-  @Column()
+  @Column('text')
   lyrics: string;
 }

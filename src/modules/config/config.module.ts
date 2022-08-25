@@ -1,7 +1,8 @@
+import path from 'path';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,6 +19,7 @@ import * as Joi from 'joi';
         YOUTUBE_API_KEY: Joi.string().required(),
         YOUTUBE_MUSIC_AUTHORIZATION: Joi.string().required(),
         YOUTUBE_MUSIC_COOKIE: Joi.string().required(),
+        YOUTUBE_TEMP_DIR: Joi.string().default(path.resolve('./temp')),
       }),
     }),
   ],

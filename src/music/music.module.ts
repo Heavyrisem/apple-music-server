@@ -7,16 +7,16 @@ import { MusicService } from './music.service';
 import { MusicController } from './music.controller';
 import { MusicInfo } from './entity/musicInfo.entity';
 import { MusicData } from './entity/musicData.entity';
+import { MusicLyrics } from './entity/musicLyrics.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MusicInfo, MusicData])],
+  imports: [TypeOrmModule.forFeature([MusicInfo, MusicData, MusicLyrics])],
   controllers: [MusicController],
 })
 export class MusicModule {
   static ForRoot(options: MusicModuleOptions): DynamicModule {
     return {
       module: MusicModule,
-      imports: [TypeOrmModule.forFeature([MusicInfo, MusicData])],
       providers: [
         {
           provide: CONFIG_OPTIONS,

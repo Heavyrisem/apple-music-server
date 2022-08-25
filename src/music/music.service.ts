@@ -1,3 +1,6 @@
+import fs from 'fs/promises';
+import path from 'path';
+
 import {
   Inject,
   Injectable,
@@ -6,16 +9,15 @@ import {
 } from '@nestjs/common';
 import { YoutubeSearch } from '@heavyrisem/youtube-search';
 import * as YoutubeMusicAPI from '@heavyrisem/ytmusic';
-import * as ytdl from 'ytdl-core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Writable } from 'typeorm/platform/PlatformTools';
-import * as ffmpeg from 'fluent-ffmpeg';
+import * as youtubeDlExec from 'youtube-dl-exec';
 
 import { CONFIG_OPTIONS } from './music.constants';
 import { MusicModuleOptions } from './music.interface';
 import { MusicInfo } from './entity/musicInfo.entity';
 import { MusicData } from './entity/musicData.entity';
+import { MusicLyrics } from './entity/musicLyrics.entity';
 
 @Injectable()
 export class MusicService {
@@ -25,6 +27,7 @@ export class MusicService {
     @Inject(CONFIG_OPTIONS) private readonly options: MusicModuleOptions,
     @InjectRepository(MusicInfo) private readonly musicInfoRepository: Repository<MusicInfo>,
     @InjectRepository(MusicData) private readonly musicDataRepository: Repository<MusicData>,
+    @InjectRepository(MusicLyrics) private readonly musicLyricsRepository: Repository<MusicLyrics>,
   ) {
     this.youtubeAPI = new YoutubeSearch(this.options.youtubeApiKey);
   }
@@ -41,10 +44,13 @@ export class MusicService {
     const cachedMusicInfo = await this.musicInfoRepository.findOne({
       where: { videoId: youtubeSearchResult.id.videoId },
     });
-    if (cachedMusicInfo) return cachedMusicInfo;
+    if (cachedMusicInfo) {
+      console.log(`[${cachedMusicInfo.videoId}] - Cached Search Data Found`);
+      return cachedMusicInfo;
+    }
 
     const relatedMusic = await this.youtubeAPI.getRelatedMusic(youtubeSearchResult.id.videoId);
-    if (relatedMusic.ytMusicId) console.log('related music id has found');
+    if (relatedMusic.ytMusicId) console.log('Related music id has found');
 
     const musicSearchResult = await YoutubeMusicAPI.searchMusics(
       relatedMusic.ytMusicId ?? youtubeSearchResult.snippet.title,
@@ -68,64 +74,65 @@ export class MusicService {
         isExplicit: musicSearchResult.isExplicit,
       }),
     );
+
     return saveResult;
   }
 
-  async getLyrics(videoId: string, lang = 'en') {
-    return await this.youtubeAPI.getCaption(videoId, lang, 'vtt');
+  async getLyrics(videoId: string, lang = 'en'): Promise<MusicLyrics> {
+    const cachedMusicLyrics = await this.musicLyricsRepository.findOne({ where: { videoId } });
+    if (cachedMusicLyrics) {
+      console.log(`[${cachedMusicLyrics.videoId}] - Cached Music Lyrics Found`);
+      return cachedMusicLyrics;
+    }
+
+    const lyrics = await this.youtubeAPI.getCaption(videoId, lang, 'vtt');
+    const saveResult = await this.musicLyricsRepository.save(
+      this.musicLyricsRepository.create({
+        lyrics,
+        videoId,
+      }),
+    );
+
+    return saveResult;
   }
 
   async getVideoInfo(videoId: string) {
     return await this.youtubeAPI.getVideoInfo(videoId, { id: videoId });
   }
 
-  async getMusicData(videoId: string): Promise<Buffer> {
-    const musicData = await this.musicDataRepository.findOne({ where: { videoId } });
-    if (musicData) {
-      console.log('chaced Data Found');
-      return musicData.data;
+  async getMusicData(videoId: string): Promise<MusicData> {
+    const cachedMusicData = await this.musicDataRepository.findOne({ where: { videoId } });
+    if (cachedMusicData) {
+      console.log(`[${videoId}] - Cached Music Data Found`);
+      return cachedMusicData;
     }
 
     const musicBuffer = await this.downloadMusic(videoId);
+    const saveResult = await this.musicDataRepository.save(
+      this.musicDataRepository.create({
+        data: musicBuffer,
+        videoId,
+      }),
+    );
 
-    return await this.musicDataRepository
-      .save(
-        await this.musicDataRepository.create({
-          data: musicBuffer,
-          videoId,
-        }),
-      )
-      .then((musicData) => musicData.data);
+    return saveResult;
   }
 
   private async downloadMusic(videoId: string): Promise<Buffer> {
-    return new Promise(async (resolve, reject) => {
-      const downloadStream = await ytdl(videoId, {
-        filter: 'audioonly',
-      });
-      const downloadBuffer = [];
-
-      const writeStream = new Writable({
-        write(this, chunk, encoding, callback) {
-          downloadBuffer.push(chunk);
-          console.log(chunk);
-          callback();
-        },
-      });
-
-      ffmpeg(downloadStream)
-        .audioCodec('libmp3lame')
-        .audioBitrate(128)
-        .format('mp3')
-        .pipe(writeStream)
-        .on('end', () => console.log('download end'))
-        .on('finish', () => {
-          console.log('download finish');
-          resolve(Buffer.concat(downloadBuffer));
-        })
-        .on('error', (err) => {
-          reject(new InternalServerErrorException(err));
-        });
+    const filePath = path.resolve(this.options.tempDir, `${videoId}.mp3`);
+    const downloadProcess = await youtubeDlExec.exec(videoId, {
+      extractAudio: true,
+      audioQuality: 0,
+      audioFormat: 'mp3',
+      output: filePath,
     });
+    if (downloadProcess.stderr) {
+      console.error(downloadProcess.stderr);
+      throw new InternalServerErrorException('Cannot download music');
+    }
+
+    const buf = await fs.readFile(filePath);
+    await fs.rm(filePath);
+    return buf;
   }
 }

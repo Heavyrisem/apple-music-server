@@ -16,6 +16,7 @@ import { DatabaseModule } from './modules/database/database.module';
       youtubeApiKey: process.env.YOUTUBE_API_KEY,
       musicAuthorization: process.env.YOUTUBE_MUSIC_AUTHORIZATION,
       musicCookie: process.env.YOUTUBE_MUSIC_COOKIE,
+      tempDir: process.env.YOUTUBE_TEMP_DIR,
     }),
   ],
   controllers: [],
