@@ -1,7 +1,3 @@
-import * as fs from 'fs';
-import { Stream, Writable } from 'stream';
-import { resolve } from 'path';
-
 import {
   Inject,
   Injectable,
@@ -13,14 +9,13 @@ import * as YoutubeMusicAPI from '@heavyrisem/ytmusic';
 import * as ytdl from 'ytdl-core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Writable } from 'typeorm/platform/PlatformTools';
 import * as ffmpeg from 'fluent-ffmpeg';
 
 import { CONFIG_OPTIONS } from './music.constants';
 import { MusicModuleOptions } from './music.interface';
 import { MusicInfo } from './entity/musicInfo.entity';
 import { MusicData } from './entity/musicData.entity';
-
-import { getBufferFromStream } from '~src/modules/utils';
 
 @Injectable()
 export class MusicService {
@@ -34,10 +29,10 @@ export class MusicService {
     this.youtubeAPI = new YoutubeSearch(this.options.youtubeApiKey);
   }
 
-  async searchMusic(query: string): Promise<MusicInfo> {
+  async searchMusic(query: string, caption = true): Promise<MusicInfo> {
     const youtubeSearchResult = await this.youtubeAPI
       .searchYoutube(query, {
-        videoCaption: 'closedCaption',
+        videoCaption: caption ? 'closedCaption' : 'any',
         maxResults: 1,
       })
       .then((items) => items.shift());
@@ -49,7 +44,7 @@ export class MusicService {
     if (cachedMusicInfo) return cachedMusicInfo;
 
     const relatedMusic = await this.youtubeAPI.getRelatedMusic(youtubeSearchResult.id.videoId);
-    // if (relatedMusic.ytMusicId) console.log('relatedMusic id has found');
+    if (relatedMusic.ytMusicId) console.log('related music id has found');
 
     const musicSearchResult = await YoutubeMusicAPI.searchMusics(
       relatedMusic.ytMusicId ?? youtubeSearchResult.snippet.title,
@@ -76,7 +71,7 @@ export class MusicService {
     return saveResult;
   }
 
-  async getCaption(videoId: string, lang = 'en') {
+  async getLyrics(videoId: string, lang = 'en') {
     return await this.youtubeAPI.getCaption(videoId, lang, 'vtt');
   }
 
@@ -92,9 +87,6 @@ export class MusicService {
     }
 
     const musicBuffer = await this.downloadMusic(videoId);
-    console.log('Converting to base64');
-    const base64 = musicBuffer.toString('base64');
-    console.log('Converting to base64');
 
     return await this.musicDataRepository
       .save(
@@ -108,12 +100,15 @@ export class MusicService {
 
   private async downloadMusic(videoId: string): Promise<Buffer> {
     return new Promise(async (resolve, reject) => {
-      const downloadStream = await ytdl(videoId, { filter: 'audioonly' });
+      const downloadStream = await ytdl(videoId, {
+        filter: 'audioonly',
+      });
       const downloadBuffer = [];
 
       const writeStream = new Writable({
         write(this, chunk, encoding, callback) {
           downloadBuffer.push(chunk);
+          console.log(chunk);
           callback();
         },
       });
@@ -123,17 +118,14 @@ export class MusicService {
         .audioBitrate(128)
         .format('mp3')
         .pipe(writeStream)
+        .on('end', () => console.log('download end'))
         .on('finish', () => {
+          console.log('download finish');
           resolve(Buffer.concat(downloadBuffer));
         })
         .on('error', (err) => {
           reject(new InternalServerErrorException(err));
         });
-
-      // const temp = await stream2buffer(await ytdl(videoId, { filter: 'audio' }));
-      // fs.writeFileSync(`${__dirname}/test.mp3`, temp);
-
-      // return resolve(await getBufferFromStream(downloadStream));
     });
   }
 }

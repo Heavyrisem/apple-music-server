@@ -18,3 +18,8 @@ export interface MusicData {
   videoId: string;
   data: Buffer;
 }
+
+export interface MusicLyrics {
+  videoId: string;
+  lyrics: string;
+}

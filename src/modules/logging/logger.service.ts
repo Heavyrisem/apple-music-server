@@ -7,27 +7,20 @@ const { errors, combine, json, timestamp, ms, prettyPrint } = winston.format;
 export class LoggerService implements LS {
   private logger: winston.Logger;
 
-  constructor(service) {
+  constructor(label: string) {
     this.logger = winston.createLogger({
-      format: combine(
-        errors({ stack: true }),
-        json(),
-        timestamp({ format: 'isoDateTime' }),
-        ms(),
-        prettyPrint(),
-      ),
-      defaultMeta: { service },
+      format: combine(errors({ stack: true }), json(), timestamp(), ms(), prettyPrint()),
       transports: [
         new winston.transports.Console({
           level: 'debug',
-          format: combine(nestWinstonModuleUtilities.format.nestLike('Nest-BoilerPlate')),
+          format: combine(nestWinstonModuleUtilities.format.nestLike(label)),
         }),
       ],
     });
 
-    console.log = (message: any, params?: any) => {
-      this.logger.debug(message, params);
-    };
+    // console.log = (message: any, params?: any) => {
+    //   this.logger.debug(message, params);
+    // };
   }
 
   log(message: string) {

@@ -40,7 +40,8 @@
     "rxjs": "^7.2.0",
     "typeorm": "^0.3.7",
     "winston": "^3.8.1",
-    "ytdl-core": "^4.11.0"
+    "youtube-dl": "^3.5.0",
+    "ytdl-core": "4.9.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
@@ -50,6 +51,7 @@
     "@types/jest": "27.0.2",
     "@types/node": "^16.0.0",
     "@types/supertest": "^2.0.11",
+    "@types/youtube-dl": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "cross-env": "^7.0.3",

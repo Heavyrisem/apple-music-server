@@ -18,15 +18,15 @@ export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
   @Get('search')
-  async search(@Query('q') query: string) {
-    console.log('query', query);
-    return await this.musicService.searchMusic(query);
+  async search(@Query('q') query: string, @Query('lyrics') lyrics?: boolean) {
+    console.log('query', query, 'lyrics', lyrics);
+    return await this.musicService.searchMusic(query, lyrics);
   }
 
   @Get('caption/:videoId')
   async getCaption(@Param('videoId') videoId: string, @Query('lang') lang?: string) {
     try {
-      return await this.musicService.getCaption(videoId, lang);
+      return await this.musicService.getLyrics(videoId, lang);
     } catch (err) {
       const msg = err.message;
       if (typeof msg === 'string') {
@@ -42,23 +42,14 @@ export class MusicController {
     }
   }
 
-  // TODO: send stream data with file name
-  @Get()
-  async getFile(@Res() res: Response) {
-    console.log('/music');
-    const temp = await this.musicService.getMusicData('RMPX_vgqQnM');
+  @Get('/:videoId')
+  async getFile(@Res() res: Response, @Param('videoId') videoId: string) {
+    const temp = await this.musicService.getMusicData(videoId);
 
     res.set({
       'Content-Length': temp.length,
       'Content-Type': 'application/mp3',
     });
     getReadableStreamFromBuffer(temp).pipe(res);
-    // const file = createReadStream(join(process.cwd(), 'test.mp3'));
-    // file.pipe(res);
   }
-
-  // @Get('/:videoId')
-  // async downloadMusic(@Param('videoId') videoId: string) {
-  //   return await this.musicService.downloadMusic(videoId);
-  // }
 }
