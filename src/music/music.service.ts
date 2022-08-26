@@ -80,7 +80,9 @@ export class MusicService {
     return saveResult;
   }
   async getLyrics(videoId: string, lang = 'en'): Promise<MusicLyrics> {
-    const cachedMusicLyrics = await this.musicLyricsRepository.findOne({ where: { videoId } });
+    const cachedMusicLyrics = await this.musicLyricsRepository.findOne({
+      where: { videoId, lang },
+    });
     if (cachedMusicLyrics) {
       console.log(`[${cachedMusicLyrics.videoId}] - Cached Music Lyrics Found`);
       return cachedMusicLyrics;
@@ -91,6 +93,7 @@ export class MusicService {
       this.musicLyricsRepository.create({
         lyrics,
         videoId,
+        lang,
       }),
     );
 

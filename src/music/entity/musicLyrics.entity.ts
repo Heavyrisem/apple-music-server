@@ -9,6 +9,9 @@ export class MusicLyrics extends CoreEntity implements MusicLyricsType {
   @Column()
   videoId: string;
 
+  @Column()
+  lang: string;
+
   @Column('text')
   lyrics: string;
 }
