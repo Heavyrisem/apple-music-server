@@ -396,10 +396,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@heavyrisem/youtube-search@^2.1.2":
-  version "2.1.2"
-  resolved "https://npm.pkg.github.com/download/@Heavyrisem/youtube-search/2.1.2/3422958e41ae5cd73c5f44c5ff07fafa1a9ad42c#3422958e41ae5cd73c5f44c5ff07fafa1a9ad42c"
-  integrity sha512-MNkI6fUuWnibbkVhT9stCd3CaLEJaho8HskAeaW4KtD7Qrh/SWZ2IX7rLqpbV60Ye9oNWNfWkLvuyeM43rO95g==
+"@heavyrisem/youtube-search@^2.1.4":
+  version "2.1.4"
+  resolved "https://npm.pkg.github.com/download/@Heavyrisem/youtube-search/2.1.4/59852434e1a9a4e9f9d9b0e758c1eb80e00b3a3d#59852434e1a9a4e9f9d9b0e758c1eb80e00b3a3d"
+  integrity sha512-n9j1QISn5BdzDaEgWFF5RdbI8f4RTc7yoUMxwKKL/esXIYpMqxWWSyyl2xV4c5s8qrfsMWhpjJr/CLtOirj/tA==
   dependencies:
     axios "^0.27.2"
     cheerio "^1.0.0-rc.12"

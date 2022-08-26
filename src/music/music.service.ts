@@ -7,7 +7,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { YoutubeSearch } from '@heavyrisem/youtube-search';
+import { YoutubeSearch, MusicInfo as YT_MusicInfo } from '@heavyrisem/youtube-search';
 import * as YoutubeMusicAPI from '@heavyrisem/ytmusic';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -45,7 +45,7 @@ export class MusicService {
 
     const youtubeResult = await this.getVideoInfo(id);
 
-    const relatedMusic = await this.youtubeAPI.getRelatedMusic(youtubeResult.id);
+    const relatedMusic = await this.getRelatedMusic(youtubeResult.id);
     if (relatedMusic.ytMusicId) console.log('Related music id has found');
 
     const musicSearchResult = await this.getMusicMetadata(
@@ -67,8 +67,8 @@ export class MusicService {
       console.log(`[${cachedMusicInfo.videoId}] - Cached Search Data Found`);
       return cachedMusicInfo;
     }
-
-    const relatedMusic = await this.youtubeAPI.getRelatedMusic(youtubeSearchResult.id.videoId);
+    console.log(youtubeSearchResult.id.videoId);
+    const relatedMusic = await this.getRelatedMusic(youtubeSearchResult.id.videoId);
     if (relatedMusic.ytMusicId) console.log('Related music id has found');
 
     const musicSearchResult = await this.getMusicMetadata(
@@ -113,6 +113,14 @@ export class MusicService {
     );
 
     return saveResult;
+  }
+
+  private async getRelatedMusic(videoId: string) {
+    try {
+      return await this.youtubeAPI.getRelatedMusic(videoId);
+    } catch (err) {
+      return { ytMusicId: null };
+    }
   }
 
   private getVideoInfo(videoId: string) {
@@ -164,7 +172,6 @@ export class MusicService {
   }
 
   private async saveMusicInfo(videoId: string, data: MusicVideo): Promise<MusicInfo> {
-    console.log('DEBUG', videoId, data);
     const saveResult = await this.musicInfoRepository.save(
       this.musicInfoRepository.create({
         videoId,
