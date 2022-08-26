@@ -12,9 +12,11 @@ import * as YoutubeMusicAPI from '@heavyrisem/ytmusic';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as youtubeDlExec from 'youtube-dl-exec';
+import { MusicVideo } from '@heavyrisem/ytmusic';
+import { SearchYoutubeModel } from '@heavyrisem/youtube-search/dist/models';
 
 import { CONFIG_OPTIONS } from './music.constants';
-import { MusicModuleOptions } from './music.interface';
+import { MusicModuleOptions, MusicInfo as MusicInfoType } from './music.interface';
 import { MusicInfo } from './entity/musicInfo.entity';
 import { MusicData } from './entity/musicData.entity';
 import { MusicLyrics } from './entity/musicLyrics.entity';
@@ -32,14 +34,31 @@ export class MusicService {
     this.youtubeAPI = new YoutubeSearch(this.options.youtubeApiKey);
   }
 
+  async getMusic(id: string): Promise<MusicInfo> {
+    const cachedMusicInfo = await this.musicInfoRepository.findOne({
+      where: [{ videoId: id }, { musicId: id }],
+    });
+    if (cachedMusicInfo) {
+      console.log(`[${cachedMusicInfo.videoId}] - Cached MusicInfo Data Found`);
+      return cachedMusicInfo;
+    }
+
+    const youtubeResult = await this.getVideoInfo(id);
+
+    const relatedMusic = await this.youtubeAPI.getRelatedMusic(youtubeResult.id);
+    if (relatedMusic.ytMusicId) console.log('Related music id has found');
+
+    const musicSearchResult = await this.getMusicMetadata(
+      relatedMusic.ytMusicId ?? youtubeResult.snippet.title,
+    );
+
+    const saveResult = await this.saveMusicInfo(youtubeResult.id, musicSearchResult);
+
+    return saveResult;
+  }
+
   async searchMusic(query: string, caption = true): Promise<MusicInfo> {
-    const youtubeSearchResult = await this.youtubeAPI
-      .searchYoutube(query, {
-        videoCaption: caption ? 'closedCaption' : 'any',
-        maxResults: 1,
-      })
-      .then((items) => items.shift());
-    if (!youtubeSearchResult) throw new NotFoundException('No result found on Youtube');
+    const youtubeSearchResult = await this.searchVideo(query, caption);
 
     const cachedMusicInfo = await this.musicInfoRepository.findOne({
       where: { videoId: youtubeSearchResult.id.videoId },
@@ -52,32 +71,14 @@ export class MusicService {
     const relatedMusic = await this.youtubeAPI.getRelatedMusic(youtubeSearchResult.id.videoId);
     if (relatedMusic.ytMusicId) console.log('Related music id has found');
 
-    const musicSearchResult = await YoutubeMusicAPI.searchMusics(
+    const musicSearchResult = await this.getMusicMetadata(
       relatedMusic.ytMusicId ?? youtubeSearchResult.snippet.title,
-      {
-        headers: {
-          Authorization: this.options.musicAuthorization,
-          Cookie: this.options.musicCookie,
-        },
-      },
-    ).then((items) => items.shift());
-    if (!musicSearchResult) throw new NotFoundException('No result found on Youtube Music');
-
-    const saveResult = await this.musicInfoRepository.save(
-      this.musicInfoRepository.create({
-        videoId: youtubeSearchResult.id.videoId,
-        musicId: musicSearchResult.youtubeId,
-        title: musicSearchResult.title,
-        album: musicSearchResult.album,
-        artists: musicSearchResult.artists.map((artist) => artist.name),
-        thumbnail: musicSearchResult.thumbnailUrl,
-        isExplicit: musicSearchResult.isExplicit,
-      }),
     );
+
+    const saveResult = await this.saveMusicInfo(youtubeSearchResult.id.videoId, musicSearchResult);
 
     return saveResult;
   }
-
   async getLyrics(videoId: string, lang = 'en'): Promise<MusicLyrics> {
     const cachedMusicLyrics = await this.musicLyricsRepository.findOne({ where: { videoId } });
     if (cachedMusicLyrics) {
@@ -94,10 +95,6 @@ export class MusicService {
     );
 
     return saveResult;
-  }
-
-  async getVideoInfo(videoId: string) {
-    return await this.youtubeAPI.getVideoInfo(videoId, { id: videoId });
   }
 
   async getMusicData(videoId: string): Promise<MusicData> {
@@ -118,6 +115,36 @@ export class MusicService {
     return saveResult;
   }
 
+  private getVideoInfo(videoId: string) {
+    return this.youtubeAPI
+      .getVideoInfo(videoId, { id: videoId, part: ['snippet'] })
+      .then((res) => res.shift());
+  }
+
+  private async searchVideo(query: string, caption = false): Promise<SearchYoutubeModel> {
+    const youtubeSearchResult = await this.youtubeAPI
+      .searchYoutube(query, {
+        videoCaption: caption ? 'closedCaption' : 'any',
+        maxResults: 1,
+      })
+      .then((items) => items.shift());
+    if (!youtubeSearchResult) throw new NotFoundException('No result found on Youtube');
+
+    return youtubeSearchResult;
+  }
+
+  private async getMusicMetadata(q: string): Promise<MusicVideo> {
+    const musicSearchResult = await YoutubeMusicAPI.searchMusics(q, {
+      headers: {
+        Authorization: this.options.musicAuthorization,
+        Cookie: this.options.musicCookie,
+      },
+    }).then((items) => items.shift());
+    if (!musicSearchResult) throw new NotFoundException('No result found on Youtube Music');
+
+    return musicSearchResult;
+  }
+
   private async downloadMusic(videoId: string): Promise<Buffer> {
     const filePath = path.resolve(this.options.tempDir, `${videoId}.mp3`);
     const downloadProcess = await youtubeDlExec.exec(videoId, {
@@ -130,9 +157,26 @@ export class MusicService {
       console.error(downloadProcess.stderr);
       throw new InternalServerErrorException('Cannot download music');
     }
-
+    console.log(downloadProcess.stdout);
     const buf = await fs.readFile(filePath);
     await fs.rm(filePath);
     return buf;
+  }
+
+  private async saveMusicInfo(videoId: string, data: MusicVideo): Promise<MusicInfo> {
+    console.log('DEBUG', videoId, data);
+    const saveResult = await this.musicInfoRepository.save(
+      this.musicInfoRepository.create({
+        videoId,
+        musicId: data.youtubeId,
+        title: data.title,
+        album: data.album,
+        artists: data.artists.map((artist) => artist.name),
+        thumbnail: data.thumbnailUrl,
+        isExplicit: data.isExplicit,
+      }),
+    );
+
+    return saveResult;
   }
 }

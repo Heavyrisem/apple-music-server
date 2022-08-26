@@ -19,13 +19,13 @@ import { getReadableStreamFromBuffer } from '~src/modules/utils';
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
-  @Get('search')
+  @Get('/search')
   async search(@Query('q') query: string, @Query('lyrics') lyrics?: boolean): Promise<MusicInfo> {
     console.log('query', query, 'lyrics', lyrics);
     return await this.musicService.searchMusic(query, lyrics);
   }
 
-  @Get('lyrics/:videoId')
+  @Get('/lyrics/:videoId')
   async getCaption(
     @Param('videoId') videoId: string,
     @Query('lang') lang?: string,
@@ -47,14 +47,20 @@ export class MusicController {
     }
   }
 
-  @Get('/:videoId')
+  @Get('/file/:videoId')
   async getFile(@Res() res: Response, @Param('videoId') videoId: string) {
     const musicData = await this.musicService.getMusicData(videoId);
 
     res.set({
       'Content-Length': musicData.data.length,
-      'Content-Type': 'application/mp3',
+      'Content-Type': 'audio/mp3',
+      'Accept-Ranges': 'bytes',
     });
     getReadableStreamFromBuffer(musicData.data).pipe(res);
+  }
+
+  @Get('/:videoId')
+  async getInfo(@Param('videoId') videoId: string): Promise<MusicInfo> {
+    return await this.musicService.getMusic(videoId);
   }
 }

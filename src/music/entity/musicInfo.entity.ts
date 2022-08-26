@@ -9,7 +9,7 @@ export class MusicInfo extends CoreEntity implements MusicInfoType {
   @Column({ unique: true })
   videoId: string;
 
-  @Column({ unique: true })
+  @Column()
   musicId: string;
 
   @Column()
