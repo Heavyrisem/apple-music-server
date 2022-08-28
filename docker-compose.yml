@@ -1,19 +1,20 @@
 version: '3'
 
 services:
-  # server:
-  #   build: .
-  #   ports:
-  #     - '3000:3000'
-  #   depends_on:
-  #     - db
-  #   env_file:
-  #     - .env.production
-  db:
-    image: mysql
-    restart: always
+  backend:
+    build:
+      context: .
+      args:
+        - NPM_TOKEN=${GIT_NPM_TOKEN}
     ports:
-      - 33060:3306
+      - 12311:3000
+    depends_on:
+      - apple_music_mysql
+    env_file:
+      - .env.production
+  mysql:
+    image: mysql:8
+    restart: always
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/config:/etc/mysql/conf.d
