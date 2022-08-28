@@ -28,7 +28,7 @@ export class MusicController {
   @Get('/lyrics/:videoId')
   async getCaption(
     @Param('videoId') videoId: string,
-    @Query('lang') lang?: string,
+    @Query('lang') lang?: string[],
   ): Promise<MusicLyrics> {
     try {
       return await this.musicService.getLyrics(videoId, lang);
@@ -36,7 +36,7 @@ export class MusicController {
       const msg = err.message;
       if (typeof msg === 'string') {
         if (
-          msg.includes('Could not find captions for') ||
+          msg.includes('Could not find captions') ||
           msg.includes('No captions found for this video') ||
           msg.includes('No video id found')
         )

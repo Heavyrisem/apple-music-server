@@ -7,7 +7,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { YoutubeSearch, MusicInfo as YT_MusicInfo } from '@heavyrisem/youtube-search';
+import { YoutubeSearch } from '@heavyrisem/youtube-search';
 import * as YoutubeMusicAPI from '@heavyrisem/ytmusic';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,7 +16,7 @@ import { MusicVideo } from '@heavyrisem/ytmusic';
 import { SearchYoutubeModel } from '@heavyrisem/youtube-search/dist/models';
 
 import { CONFIG_OPTIONS } from './music.constants';
-import { MusicModuleOptions, MusicInfo as MusicInfoType } from './music.interface';
+import { MusicModuleOptions } from './music.interface';
 import { MusicInfo } from './entity/musicInfo.entity';
 import { MusicData } from './entity/musicData.entity';
 import { MusicLyrics } from './entity/musicLyrics.entity';
@@ -45,11 +45,12 @@ export class MusicService {
 
     const youtubeResult = await this.getVideoInfo(id);
 
-    const relatedMusic = await this.getRelatedMusic(youtubeResult.id);
-    if (relatedMusic.ytMusicId) console.log('Related music id has found');
+    // const relatedMusic = await this.getRelatedMusic(youtubeResult.id);
+    // if (relatedMusic.ytMusicId) console.log('Related music id has found');
 
     const musicSearchResult = await this.getMusicMetadata(
-      relatedMusic.ytMusicId ?? youtubeResult.snippet.title,
+      // relatedMusic.ytMusicId ?? youtubeResult.snippet.title,
+      youtubeResult.snippet.title,
     );
 
     const saveResult = await this.saveMusicInfo(youtubeResult.id, musicSearchResult);
@@ -68,36 +69,47 @@ export class MusicService {
       return cachedMusicInfo;
     }
     console.log(youtubeSearchResult.id.videoId);
-    const relatedMusic = await this.getRelatedMusic(youtubeSearchResult.id.videoId);
-    if (relatedMusic.ytMusicId) console.log('Related music id has found');
+    // const relatedMusic = await this.getRelatedMusic(youtubeSearchResult.id.videoId);
+    // if (relatedMusic.ytMusicId) console.log('Related music id has found');
 
     const musicSearchResult = await this.getMusicMetadata(
-      relatedMusic.ytMusicId ?? youtubeSearchResult.snippet.title,
+      // relatedMusic.ytMusicId ?? youtubeSearchResult.snippet.title,
+      youtubeSearchResult.snippet.title,
     );
 
     const saveResult = await this.saveMusicInfo(youtubeSearchResult.id.videoId, musicSearchResult);
 
     return saveResult;
   }
-  async getLyrics(videoId: string, lang = 'en'): Promise<MusicLyrics> {
+  async getLyrics(videoId: string, languages = ['en', 'en-GB', 'ko']): Promise<MusicLyrics> {
     const cachedMusicLyrics = await this.musicLyricsRepository.findOne({
-      where: { videoId, lang },
+      where: { videoId },
     });
     if (cachedMusicLyrics) {
       console.log(`[${cachedMusicLyrics.videoId}] - Cached Music Lyrics Found`);
       return cachedMusicLyrics;
     }
 
-    const lyrics = await this.youtubeAPI.getCaption(videoId, lang, 'vtt');
-    const saveResult = await this.musicLyricsRepository.save(
-      this.musicLyricsRepository.create({
-        lyrics,
-        videoId,
-        lang,
-      }),
-    );
+    for (const lang of languages) {
+      try {
+        const lyrics = await this.youtubeAPI.getCaption(videoId, lang, 'vtt');
+        if (lyrics.includes('<c>')) throw Error(`Could not find captions for ${lang}`);
 
-    return saveResult;
+        const saveResult = await this.musicLyricsRepository.save(
+          this.musicLyricsRepository.create({
+            lyrics,
+            videoId,
+            lang,
+          }),
+        );
+
+        return saveResult;
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+
+    throw Error(`Could not find captions`);
   }
 
   async getMusicData(videoId: string): Promise<MusicData> {
@@ -137,8 +149,15 @@ export class MusicService {
       .searchYoutube(query, {
         videoCaption: caption ? 'closedCaption' : 'any',
         maxResults: 1,
+        videoCategoryId: '10',
+        regionCode: 'US',
       })
-      .then((items) => items.shift());
+      .then((res) => {
+        console.log(res);
+        return res;
+      })
+      .then((items) => items.shift())
+      .catch((err) => console.log(err.response));
     if (!youtubeSearchResult) throw new NotFoundException('No result found on Youtube');
 
     return youtubeSearchResult;
