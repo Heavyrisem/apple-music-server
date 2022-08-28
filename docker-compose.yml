@@ -8,8 +8,11 @@ services:
         - NPM_TOKEN=${GIT_NPM_TOKEN}
     ports:
       - 12311:3000
+    networks:
+      - default
+      - shared
     depends_on:
-      - apple_music_mysql
+      - mysql
     env_file:
       - .env.production
   mysql:
@@ -24,3 +27,6 @@ services:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: apple_music
       time_zone: UTC
+networks:
+  shared:
+    driver: bridge
