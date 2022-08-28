@@ -164,10 +164,6 @@ export class MusicService {
         videoCategoryId: '10',
         regionCode: 'US',
       })
-      .then((res) => {
-        console.log(res);
-        return res;
-      })
       .then((items) => items.shift())
       .catch((err) => console.log(err.response));
     if (!youtubeSearchResult) throw new NotFoundException('No result found on Youtube');
@@ -176,18 +172,12 @@ export class MusicService {
   }
 
   private async getMusicMetadata(q: string): Promise<MusicVideo> {
-    console.log('getMusicMetadata', q, this.options.musicAuthorization, this.options.musicCookie);
     const musicSearchResult = await YoutubeMusicAPI.searchMusics(q, {
       headers: {
         Authorization: this.options.musicAuthorization,
         Cookie: this.options.musicCookie,
       },
-    })
-      .then((res) => {
-        console.log(res);
-        return res;
-      })
-      .then((items) => items.shift());
+    }).then((items) => items.shift());
     if (!musicSearchResult) throw new NotFoundException('No result found on Youtube Music');
 
     return musicSearchResult;
