@@ -34,6 +34,18 @@ export class MusicService {
     this.youtubeAPI = new YoutubeSearch(this.options.youtubeApiKey);
   }
 
+  async searchVideos(
+    q: string,
+    lyrics = false,
+  ): Promise<Pick<SearchYoutubeModel, 'id' | 'snippet'>[]> {
+    return await this.youtubeAPI
+      .searchYoutube(q, {
+        maxResults: 5,
+        videoCaption: lyrics ? 'closedCaption' : 'any',
+      })
+      .then((res) => res.map((result) => ({ id: result.id, snippet: result.snippet })));
+  }
+
   async getMusic(id: string): Promise<MusicInfo> {
     const cachedMusicInfo = await this.musicInfoRepository.findOne({
       where: [{ videoId: id }, { musicId: id }],

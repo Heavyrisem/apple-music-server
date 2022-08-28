@@ -19,6 +19,11 @@ import { getReadableStreamFromBuffer } from '~src/modules/utils';
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
+  @Get('/video/search')
+  async searchVideos(@Query('q') query: string, @Query('lyrics') lyrics?: boolean) {
+    return await this.musicService.searchVideos(query, lyrics);
+  }
+
   @Get('/search')
   async search(@Query('q') query: string, @Query('lyrics') lyrics?: boolean): Promise<MusicInfo> {
     console.log('query', query, 'lyrics', lyrics);
