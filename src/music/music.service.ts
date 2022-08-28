@@ -176,13 +176,18 @@ export class MusicService {
   }
 
   private async getMusicMetadata(q: string): Promise<MusicVideo> {
-    console.log('getMusicMetadata', q);
+    console.log('getMusicMetadata', q, this.options.musicAuthorization, this.options.musicCookie);
     const musicSearchResult = await YoutubeMusicAPI.searchMusics(q, {
       headers: {
         Authorization: this.options.musicAuthorization,
         Cookie: this.options.musicCookie,
       },
-    }).then((items) => items.shift());
+    })
+      .then((res) => {
+        console.log(res);
+        return res;
+      })
+      .then((items) => items.shift());
     if (!musicSearchResult) throw new NotFoundException('No result found on Youtube Music');
 
     return musicSearchResult;
