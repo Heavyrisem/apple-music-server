@@ -176,6 +176,7 @@ export class MusicService {
   }
 
   private async getMusicMetadata(q: string): Promise<MusicVideo> {
+    console.log('getMusicMetadata', q);
     const musicSearchResult = await YoutubeMusicAPI.searchMusics(q, {
       headers: {
         Authorization: this.options.musicAuthorization,
