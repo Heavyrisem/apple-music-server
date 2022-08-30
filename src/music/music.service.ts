@@ -93,7 +93,10 @@ export class MusicService {
 
     return saveResult;
   }
-  async getLyrics(videoId: string, languages = ['en', 'en-GB', 'ko']): Promise<MusicLyrics> {
+  async getLyrics(
+    videoId: string,
+    languages = ['en', 'en-US', 'en-GB', 'ko'],
+  ): Promise<MusicLyrics> {
     const cachedMusicLyrics = await this.musicLyricsRepository.findOne({
       where: { videoId },
     });
@@ -191,8 +194,8 @@ export class MusicService {
       audioFormat: 'mp3',
       output: filePath,
     });
-    if (downloadProcess.stderr) {
-      console.error(downloadProcess.stderr);
+    if (downloadProcess.stderr && downloadProcess.stderr.includes('ERROR:')) {
+      console.log(downloadProcess.stderr);
       throw new InternalServerErrorException('Cannot download music');
     }
     console.log(downloadProcess.stdout);
