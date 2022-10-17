@@ -14,4 +14,4 @@ services:
 
 networks:
   music_net:
-    driver: bridge
+    external: true
