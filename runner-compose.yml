@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  music_server_runner:
+    container_name: music-server-runner
+    image: interaction/github-actions-runner:latest
+    restart: always
+    environment:
+      RUNNER_WORKDIR: /_work
+    env_file:
+      - .env.runner
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./_work:/_work

@@ -38,8 +38,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # env
-.env
-.env.production
+.env*
 
 # test data
 *.mp3
