@@ -24,7 +24,7 @@ jobs:
 
       - name: Build
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.run_id }} ${{ env.DOCKER_IMAGE }}:latest . --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.run_id }} -t ${{ env.DOCKER_IMAGE }}:latest . --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }}
 
       - name: Push
         run: docker push ${{ env.DOCKER_IMAGE }} --all-tags
