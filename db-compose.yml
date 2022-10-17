@@ -11,7 +11,7 @@ services:
     networks:
       - music_net
     volumes:
-      - db_volume:/var/lib/mysql
+      - music_db_volume:/var/lib/mysql
       - ./mysql/config:/etc/mysql/conf.d
       - ./mysql/config/init.sql:/data/application/init.sql
     command: --init-file /data/application/init.sql
