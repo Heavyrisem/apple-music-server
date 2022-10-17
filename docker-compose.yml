@@ -2,16 +2,17 @@ version: '3'
 
 services:
   backend:
-    image: ghcr.io/heavyrisem/music-server:latest
+    image: apple-music-server
     restart: always
     networks:
       - default
-      - shared
+      - music_net
     depends_on:
       - mysql
     env_file:
-      - .env.production
+      - .env
   mysql:
+    container_name: apple-music-db
     image: mysql:8
     restart: always
     volumes:
@@ -19,7 +20,7 @@ services:
       - ./mysql/config:/etc/mysql/conf.d
       - ./mysql/config/init.sql:/data/application/init.sql
     command: --init-file /data/application/init.sql
-    env_file: .env.production
+    env_file: .env
 networks:
   music_net:
     driver: bridge

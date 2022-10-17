@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  backend:
+    image: ghcr.io/heavyrisem/music-server
+    restart: always
+    networks:
+      - default
+      - music_net
+    depends_on:
+      - mysql
+    env_file:
+      - .env.production
+
+networks:
+  music_net:
+    driver: bridge
