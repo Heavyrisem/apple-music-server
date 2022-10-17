@@ -11,6 +11,9 @@ services:
       - mysql
     env_file:
       - .env.production
+    deploy:
+      mode: replicated
+      replicas: 2
 
 networks:
   music_net:
