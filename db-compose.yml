@@ -1,25 +1,25 @@
 version: '3'
 
 services:
-  backend:
-    image: ghcr.io/heavyrisem/music-server:latest
+  db:
+    container_name: music-db
+    image: mysql
     restart: always
+    deploy:
+      placement:
+        constraints: [node.role == manager]
     networks:
-      - default
-      - shared
-    depends_on:
-      - mysql
-    env_file:
-      - .env.production
-  mysql:
-    image: mysql:8
-    restart: always
+      - music_net
     volumes:
-      - ./mysql/data:/var/lib/mysql
+      - db_volume:/var/lib/mysql
       - ./mysql/config:/etc/mysql/conf.d
       - ./mysql/config/init.sql:/data/application/init.sql
     command: --init-file /data/application/init.sql
     env_file: .env.production
+
+volumes:
+  music_db_volume:
+
 networks:
   music_net:
-    driver: bridge
+    external: true
