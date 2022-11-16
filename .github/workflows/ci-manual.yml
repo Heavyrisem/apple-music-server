@@ -1,10 +1,9 @@
-name: CI-CD # Github Action 페이지 좌측 리스트에 표시될 이름
+name: ManualBuild # Github Action 페이지 좌측 리스트에 표시될 이름
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:
 
 env:
-  DOCKER_IMAGE: ghcr.io/heavyrisem/music-server # ghcr에 업로드될 이미지 이름, format: ghcr.io/깃허브유저이름/이미지이름
+  DOCKER_IMAGE: ghcr.io/heavyrisem/music-front # ghcr에 업로드될 이미지 이름, format: ghcr.io/깃허브유저이름/이미지이름
 
 jobs:
   build:
@@ -22,21 +21,21 @@ jobs:
           username: ${{ github.actor }} # 사용자 깃허브 아이디
           password: ${{ secrets.GHCR_PAT }} # Settings > Secrets > Actions 의 GHCR_PAT 값을 불러옴
 
-      - name: Build
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.run_id }} -t ${{ env.DOCKER_IMAGE }}:latest . --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+      # - name: Build
+      #   run: |
+      #     docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.run_id }} -t ${{ env.DOCKER_IMAGE }}:latest .
 
-      - name: Push
-        run: docker push ${{ env.DOCKER_IMAGE }} --all-tags
+      # - name: Push
+      #   run: docker push ${{ env.DOCKER_IMAGE }} --all-tags
 
       # Build and Push
-      # - name: Build and push
-      #   uses: docker/build-push-action@v3
-      #   with:
-      #     push: true # ghcr에 push
-      #     tags: ${{ env.DOCKER_IMAGE }}:${{ github.run_id }},${{ env.DOCKER_IMAGE }}:latest # 이미지 버전 [이미지 고유 아이디, latest]
-      #     build-args: |
-      #       NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: true # ghcr에 push
+          tags: ${{ env.DOCKER_IMAGE }}:${{ github.ref_name }}
+          build-args: |
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
 
   # deploy:
   #   name: Deploy
