@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_IMAGE: ghcr.io/heavyrisem/music-front # ghcr에 업로드될 이미지 이름, format: ghcr.io/깃허브유저이름/이미지이름
+  DOCKER_IMAGE: ghcr.io/heavyrisem/music-server # ghcr에 업로드될 이미지 이름, format: ghcr.io/깃허브유저이름/이미지이름
 
 jobs:
   build:
@@ -21,13 +21,6 @@ jobs:
           username: ${{ github.actor }} # 사용자 깃허브 아이디
           password: ${{ secrets.GHCR_PAT }} # Settings > Secrets > Actions 의 GHCR_PAT 값을 불러옴
 
-      # - name: Build
-      #   run: |
-      #     docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.run_id }} -t ${{ env.DOCKER_IMAGE }}:latest .
-
-      # - name: Push
-      #   run: docker push ${{ env.DOCKER_IMAGE }} --all-tags
-
       # Build and Push
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -36,35 +29,3 @@ jobs:
           tags: ${{ env.DOCKER_IMAGE }}:${{ github.ref_name }}
           build-args: |
             NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-
-  # deploy:
-  #   name: Deploy
-  #   environment: deployment # Github Environment에 정의된 환경변수셋을 이용
-  #   runs-on: [self-hosted, OCI_runner] # 미리 생성한 Runner에 접속, 직접 만든 러너 중 OCI_runner 이라는 라벨이 붙은 러너를 사용
-  #   needs: build # 선행 Build job이 끝난 후에 실행
-  #   steps:
-  #     # Checkout Repository
-  #     - uses: actions/checkout@v2.1.0
-
-  #     # Create Environment File
-  #     - name: Create .env file
-  #       run: | # Github Environment로 지정한 값들을 .env 파일에 저장
-  #         jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' <<< "$SECRETS_CONTEXT" > .env
-  #       env:
-  #         SECRETS_CONTEXT: ${{ toJson(secrets) }}
-
-  #     # Login to ghcr
-  #     - name: Login to ghcr
-  #       uses: docker/login-action@v1
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.actor }} # 사용자 깃허브 아이디
-  #         password: ${{ secrets.GHCR_PAT }} # Settings > Secrets > Actions 의 GHCR_PAT 값을 불러옴
-
-  #     # Pull Image
-  #     - name: Pull Docker Image
-  #       run: docker pull ${{ env.DOCKER_IMAGE }} # build job에서 빌드한 이미지를 불러오기
-
-  #     # Deploy
-  #     - name: Run Docker Compose
-  #       run: docker-compose up -d --force-recreate # --force-recreate 인자를 통해 항상 컨테이너를 재생성하기 (.env 같은 compose 외부 요소의 변경을 반영)
