@@ -17,8 +17,6 @@ import * as Joi from 'joi';
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         YOUTUBE_API_KEY: Joi.string().required(),
-        YOUTUBE_MUSIC_AUTHORIZATION: Joi.string().required(),
-        YOUTUBE_MUSIC_COOKIE: Joi.string().required(),
         YOUTUBE_TEMP_DIR: Joi.string().default(path.resolve('./temp')),
       }),
     }),

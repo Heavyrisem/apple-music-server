@@ -1,7 +1,7 @@
 export interface MusicModuleOptions {
   youtubeApiKey: string;
-  musicAuthorization: string;
-  musicCookie: string;
+  // musicAuthorization: string;
+  // musicCookie: string;
   tempDir: string;
 }
 

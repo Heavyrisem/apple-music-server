@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  db:
+    container_name: music-db
+    image: mysql
+    restart: always
+    ports:
+      - 3306:3306
+    # deploy:
+    #   placement:
+    #     constraints: [node.role == manager]
+    # networks:
+    #   - music_net
+    volumes:
+      - music_db_volume:/var/lib/mysql
+      - ./mysql/config:/etc/mysql/conf.d
+      - ./mysql/config/init.sql:/data/application/init.sql
+    command: --init-file /data/application/init.sql
+    env_file: .env
+
+volumes:
+  music_db_volume:
+# networks:
+#   music_net:
+#     external: true
