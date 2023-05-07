@@ -39,8 +39,8 @@
     "rxjs": "^7.2.0",
     "typeorm": "^0.3.7",
     "winston": "^3.8.1",
-    "youtube-dl-exec": "^2.1.5",
-    "ytdl-core": "^4.11.0"
+    "youtube-dl-exec": "^2.4.1",
+    "ytdl-core": "^4.11.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

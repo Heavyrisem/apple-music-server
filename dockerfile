@@ -10,8 +10,8 @@ COPY .npmrc.docker .npmrc
 RUN rm -f .env
 RUN rm -f .env.production
 
-RUN yarn install
-RUN yarn build
+RUN pnpm install
+RUN pnpm build
 
 
 FROM node:alpine
@@ -21,4 +21,4 @@ COPY --from=builder /app .
 
 RUN apk add --no-cache python3 py3-pip ffmpeg
 
-CMD ["yarn", "start:prod"]
+CMD ["pnpm", "start:prod"]
