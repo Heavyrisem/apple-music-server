@@ -10,6 +10,7 @@ COPY .npmrc.docker .npmrc
 RUN rm -f .env
 RUN rm -f .env.production
 
+RUN npm i -g pnpm
 RUN pnpm install
 RUN pnpm build
 
