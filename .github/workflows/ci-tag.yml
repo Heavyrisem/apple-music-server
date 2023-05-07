@@ -27,10 +27,10 @@ jobs:
 
       # Login to ghcr
       - name: Login to ghcr
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.actor }} # 사용자 깃허브 아이디
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }} # Settings > Secrets > Actions 의 GHCR_PAT 값을 불러옴
 
       # buildx 명령어로 amd64, arm64, arm/v6, arm/v7 아키텍처 이미지 빌드 및
