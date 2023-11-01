@@ -93,8 +93,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }} # Settings > Secrets > Actions 의 GHCR_PAT 값을 불러옴
 
-      # Docker Build Test
-      - name: Docker Build Test
+      # Docker Build and Push
+      - name: Docker Build and Push
         uses: docker/build-push-action@v3
         with:
           context: .
