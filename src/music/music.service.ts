@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { YoutubeSearch } from '@heavyrisem/youtube-search';
@@ -23,6 +24,7 @@ import { MusicLyrics } from './entity/musicLyrics.entity';
 
 @Injectable()
 export class MusicService {
+  private readonly logger = new Logger(MusicService.name);
   private youtubeAPI: YoutubeSearch;
 
   constructor(
@@ -77,12 +79,12 @@ export class MusicService {
       where: { videoId: youtubeSearchResult.id.videoId },
     });
     if (cachedMusicInfo) {
-      console.log(`[${cachedMusicInfo.videoId}] - Cached Search Data Found`);
+      this.logger.log(`[${cachedMusicInfo.videoId}] - Cached Search Data Found`);
       return cachedMusicInfo;
     }
     console.log(youtubeSearchResult.id.videoId);
     const relatedMusic = await this.getRelatedMusic(youtubeSearchResult.id.videoId);
-    if (relatedMusic.ytMusicId) console.log('Related music id has found');
+    if (relatedMusic.ytMusicId) this.logger.log('Related music id has found');
 
     const musicSearchResult = await this.getMusicMetadata(
       relatedMusic.ytMusicId || youtubeSearchResult.id.videoId || youtubeSearchResult.snippet.title,
