@@ -11,6 +11,6 @@ COPY ./pnpm-lock.yaml .
 COPY ./.npmrc.build ./.npmrc
 RUN pnpm install
 
-COPY ./dist ./dist
+COPY ./dist .
 
 CMD ["pnpm", "start:prod"]
