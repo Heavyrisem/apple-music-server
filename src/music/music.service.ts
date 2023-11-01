@@ -53,18 +53,18 @@ export class MusicService {
       where: [{ videoId: id }, { musicId: id }],
     });
     if (cachedMusicInfo) {
-      console.log(`[${cachedMusicInfo.videoId}] - Cached MusicInfo Data Found`);
+      this.logger.log(`[${cachedMusicInfo.videoId}] - Cached MusicInfo Data Found`);
       return cachedMusicInfo;
     }
 
     const youtubeResult = await this.getVideoInfo(id);
 
-    // const relatedMusic = await this.getRelatedMusic(youtubeResult.id);
-    // if (relatedMusic.ytMusicId) console.log('Related music id has found');
+    const relatedMusic = await this.getRelatedMusic(youtubeResult.id);
+    if (relatedMusic.ytMusicId) this.logger.log('Related music id has found');
 
     const musicSearchResult = await this.getMusicMetadata(
-      // relatedMusic.ytMusicId ?? youtubeResult.snippet.title,
-      youtubeResult.snippet.title,
+      relatedMusic.ytMusicId || youtubeResult.id || youtubeResult.snippet.title,
+      // youtubeResult.snippet.title,
     );
 
     const saveResult = await this.saveMusicInfo(youtubeResult.id, musicSearchResult);
