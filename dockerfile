@@ -11,6 +11,6 @@ COPY ./pnpm-lock.yaml .
 COPY ./.npmrc.build ./.npmrc
 RUN pnpm install --frozen-lock
 
-COPY ./dist .
+COPY ./dist ./dist
 
 CMD ["pnpm", "start:prod"]
