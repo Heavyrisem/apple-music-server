@@ -11,7 +11,10 @@ jobs:
     name: Node Build Test
     runs-on: ubuntu-latest
     steps:
-      # Node Build Test
+      # Checkout Repository
+      - name: Check out source code
+        uses: actions/checkout@v2.1.0
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
