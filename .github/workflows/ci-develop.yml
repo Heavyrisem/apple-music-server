@@ -71,6 +71,10 @@ jobs:
           name: node-build-artifact
           path: ./dist
 
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./dist
+
       # tonistiigi/binfmt 이미지를 이용해 qemu 설치
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
