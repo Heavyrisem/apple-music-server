@@ -41,7 +41,7 @@ jobs:
 
       - name: Setup NPM Config
         run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          echo -e "\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
 
       - name: Install Dependencies
         run: pnpm install
