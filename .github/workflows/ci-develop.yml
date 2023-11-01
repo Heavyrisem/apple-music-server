@@ -44,7 +44,7 @@ jobs:
           echo -e "\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lock
 
       - name: Build Node.js
         run: pnpm build

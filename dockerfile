@@ -9,7 +9,7 @@ WORKDIR /app
 COPY ./package.json .
 COPY ./pnpm-lock.yaml .
 COPY ./.npmrc.build ./.npmrc
-RUN pnpm install
+RUN pnpm install --frozen-lock
 
 COPY ./dist .
 
