@@ -52,7 +52,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: node-build-artifact
+          name: node-build-artifact-${{ github.ref_name }}
           path: ./dist
 
   docker-build-test:
@@ -68,7 +68,7 @@ jobs:
       - name: Download Build Artifact
         uses: actions/download-artifact@v3
         with:
-          name: node-build-artifact
+          name: node-build-artifact-${{ github.ref_name }}
           path: ./dist
 
       - name: Display structure of downloaded files
