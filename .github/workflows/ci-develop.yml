@@ -39,6 +39,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Setup NPM Config
+        run: |
+          rm -rf .npmrc
+          mv .npmrc.build .npmrc
+
       - name: Install Dependencies
         run: pnpm install
 
