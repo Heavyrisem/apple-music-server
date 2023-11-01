@@ -10,20 +10,21 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: [self-hosted, build]
+    # runs-on: [self-hosted, build]
+    runs-on: ubuntu-latest
     steps:
       # Checkout Repository
       - name: Check out source code
         uses: actions/checkout@v2.1.0
 
       # tonistiigi/binfmt 이미지를 이용해 qemu 설치
-      # - name: Set up QEMU
-      #   uses: docker/setup-qemu-action@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
       # docker buildx 설치
-      # - name: Set up docker buildx
-      #   id: buildx
-      #   uses: docker/setup-buildx-action@v2
+      - name: Set up docker buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
 
       # Login to ghcr
       - name: Login to ghcr
@@ -33,15 +34,15 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }} # Settings > Secrets > Actions 의 GHCR_PAT 값을 불러옴
 
-      # buildx 명령어로 amd64, arm64, arm/v6, arm/v7 아키텍처 이미지 빌드 및
-      # - name: Docker Build
-      #   run: docker buildx build --platform linux/arm64 --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} -t ${{ env.DOCKER_IMAGE }}:latest -t ${{ github.ref_name }} --push .
+      # buildx 명령어로 amd64, arm64, arm/v6, arm/v7 아키텍처 이미지 빌드 및 push
+      - name: Docker Build
+        run: docker buildx build --platform linux/arm64 --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} -t ${{ env.DOCKER_IMAGE }}:latest -t ${{ env.DOCKER_IMAGE }}:${{ github.ref_name }} --push .
 
       # Build and Push
-      - name: Build and push
-        uses: docker/build-push-action@v3
-        with:
-          push: true # ghcr에 push
-          tags: ${{ env.DOCKER_IMAGE }}:${{ github.ref_name }},${{ env.DOCKER_IMAGE }}:latest # 이미지 버전 [이미지 고유 아이디, latest]
-          build-args: |
-            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+      # - name: Build and push
+      #   uses: docker/build-push-action@v3
+      #   with:
+      #     push: true # ghcr에 push
+      #     tags: ${{ env.DOCKER_IMAGE }}:${{ github.ref_name }},${{ env.DOCKER_IMAGE }}:latest # 이미지 버전 [이미지 고유 아이디, latest]
+      #     build-args: |
+      #       NPM_TOKEN=${{ secrets.NPM_TOKEN }}
