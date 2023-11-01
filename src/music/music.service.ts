@@ -81,12 +81,12 @@ export class MusicService {
       return cachedMusicInfo;
     }
     console.log(youtubeSearchResult.id.videoId);
-    // const relatedMusic = await this.getRelatedMusic(youtubeSearchResult.id.videoId);
-    // if (relatedMusic.ytMusicId) console.log('Related music id has found');
+    const relatedMusic = await this.getRelatedMusic(youtubeSearchResult.id.videoId);
+    if (relatedMusic.ytMusicId) console.log('Related music id has found');
 
     const musicSearchResult = await this.getMusicMetadata(
-      // relatedMusic.ytMusicId ?? youtubeSearchResult.snippet.title,
-      youtubeSearchResult.snippet.title,
+      relatedMusic.ytMusicId || youtubeSearchResult.id.videoId || youtubeSearchResult.snippet.title,
+      // youtubeSearchResult.snippet.title,
     );
 
     const saveResult = await this.saveMusicInfo(youtubeSearchResult.id.videoId, musicSearchResult);
